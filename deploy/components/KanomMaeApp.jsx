@@ -10,10 +10,12 @@ import {
   addStockIn, deleteStockIn, recalcAvgCost,
   getMenuItems, getRecipes, setRecipeLine, deleteRecipeLine,
   getSales, recordSale, deleteSale,
+  getStockTransfers, addStockTransfer, deleteStockTransfer,
 } from "../lib/supabase"
 import PageStock from "./pages/PageStock"
 import PageRecipes from "./pages/PageRecipes"
 import PageSales from "./pages/PageSales"
+import PageTransfer from "./pages/PageTransfer"
 
 // ── โครงหน้าเว็บทั้งหมด ──
 // primary: true = แสดงใน bottom nav บนมือถือ
@@ -23,7 +25,7 @@ const PAGES = [
   { id: "stock",       label: "จัดการสต็อก",    icon: Package,         primary: true, ready: true },
   { id: "sales",       label: "บันทึกขาย",      icon: ShoppingCart,    primary: true, ready: true },
   { id: "recipes",     label: "สูตรขนม",        icon: BookOpen,        primary: true, ready: true },
-  { id: "transfer",    label: "โอนเข้าหน้าร้าน", icon: ArrowRightLeft },
+  { id: "transfer",    label: "โอนเข้าหน้าร้าน", icon: ArrowRightLeft, ready: true },
   { id: "ingredients", label: "วัตถุดิบ",       icon: ScrollText },
   { id: "claims",      label: "เคลม/คืนเงิน",   icon: RotateCcw },
   { id: "analytics",   label: "วิเคราะห์",       icon: BarChart3 },
@@ -36,17 +38,19 @@ export default function KanomMaeApp() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [data, setData] = useState({
-    ingredients: [], stockBalance: [], stockIn: [], menuItems: [], recipes: [], sales: [],
+    ingredients: [], stockBalance: [], stockIn: [], menuItems: [], recipes: [], sales: [], stockTransfers: [],
   })
 
   const loadAll = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const [ingredients, stockBalance, stockIn, menuItems, recipes, sales] = await Promise.all([
-        getIngredients(), getStockBalance(), getStockIn(), getMenuItems(), getRecipes(), getSales(30),
-      ])
-      setData({ ingredients, stockBalance, stockIn, menuItems, recipes, sales })
+      const [ingredients, stockBalance, stockIn, menuItems, recipes, sales, stockTransfers] =
+        await Promise.all([
+          getIngredients(), getStockBalance(), getStockIn(), getMenuItems(),
+          getRecipes(), getSales(30), getStockTransfers(),
+        ])
+      setData({ ingredients, stockBalance, stockIn, menuItems, recipes, sales, stockTransfers })
     } catch (err) {
       setError(err.message || "โหลดข้อมูลไม่สำเร็จ")
     } finally {
@@ -86,6 +90,16 @@ export default function KanomMaeApp() {
   }
   const handleDeleteSale = async (id) => {
     await deleteSale(id)
+    await loadAll()
+  }
+
+  // ── callbacks: transfers ──
+  const handleAddTransfer = async (record) => {
+    await addStockTransfer(record)
+    await loadAll()
+  }
+  const handleDeleteTransfer = async (id) => {
+    await deleteStockTransfer(id)
     await loadAll()
   }
 
@@ -143,6 +157,17 @@ export default function KanomMaeApp() {
           sales={data.sales}
           onRecordSale={handleRecordSale}
           onDeleteSale={handleDeleteSale}
+        />
+      )
+    }
+    if (active === "transfer") {
+      return (
+        <PageTransfer
+          ingredients={data.ingredients}
+          stockBalance={data.stockBalance}
+          stockTransfers={data.stockTransfers}
+          onAddTransfer={handleAddTransfer}
+          onDeleteTransfer={handleDeleteTransfer}
         />
       )
     }
