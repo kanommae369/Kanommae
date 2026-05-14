@@ -4,6 +4,7 @@
 [build]
   base = "deploy"
   command = "npm run build"
+  publish = ".next"
 
 # plugin Next.js ของ Netlify — จัดการ SSR / API routes / publish dir ให้อัตโนมัติ
 [[plugins]]
