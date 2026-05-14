@@ -1,0 +1,10 @@
+# ขนมแม่ — Netlify deploy config
+# โค้ด Next.js อยู่ในโฟลเดอร์ deploy/ — บอก Netlify ให้ build จากที่นั่น
+
+[build]
+  base = "deploy"
+  command = "npm run build"
+
+# plugin Next.js ของ Netlify — จัดการ SSR / API routes / publish dir ให้อัตโนมัติ
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
