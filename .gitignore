@@ -1,0 +1,31 @@
+# ขนมแม่ — root .gitignore
+
+# เอกสารต้นฉบับ (คู่มือ PDF + Excel สูตร) — ไฟล์ binary ใหญ่ ไม่จำเป็นต่อการ build
+# ข้อมูลที่ระบบใช้จริงถูกแปลงเป็น deploy/supabase/seed_*.sql แล้ว
+ขนมแม่(ภัณฑ์ทวี545)/
+*.pdf
+*.xlsx
+*.xls
+
+# Environment
+.env
+.env.local
+.env.*.local
+*.env
+
+# Dependencies / build (เผื่อ — deploy/.gitignore คุมรายละเอียดอีกชั้น)
+node_modules/
+.next/
+out/
+dist/
+
+# Python
+__pycache__/
+*.pyc
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

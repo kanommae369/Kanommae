@@ -1,0 +1,255 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ────────────────────────────────────────────────────
+   Fonts
+   ──────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ────────────────────────────────────────────────────
+   ขนมแม่ — Light Theme · Navy & Pastel (CSS vars)
+   ──────────────────────────────────────────────────── */
+:root {
+  --km-bg-page:        #FFFFFF;
+  --km-bg-surface:     #FBF7F0;
+  --km-bg-card:        #FFFFFF;
+  --km-bg-elevated:    #F4EEE3;
+  --km-bg-input:       #FFFFFF;
+  --km-bg-sidebar:     #1E2A5E;
+  --km-bg-sidebar-act: #2E3D75;
+
+  --km-accent:         #6FA8DC;
+  --km-accent-hi:      #5B97CE;
+  --km-accent-soft:    #A9CCEA;
+  --km-accent-dim:     #C7D7E8;
+  --km-accent2:        #E8A0BF;
+  --km-accent2-soft:   #F3CFDD;
+
+  --km-text:           #2A2E43;
+  --km-text-2:         #6B7280;
+  --km-text-muted:     #9AA1AE;
+  --km-text-dis:       #C4C9D2;
+  --km-text-on-accent: #FFFFFF;
+  --km-on-sidebar:     #E8EBF5;
+  --km-on-sidebar-mut: #9BA3C4;
+
+  --km-success: #4CAF7D;
+  --km-warning: #E0A82E;
+  --km-danger:  #E26D6D;
+
+  --km-border:        #ECE7DD;
+  --km-border-strong: #D8D2C4;
+  --km-border-focus:  #6FA8DC;
+
+  --km-font: 'IBM Plex Sans Thai', 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --km-mono: 'JetBrains Mono', 'Menlo', monospace;
+
+  --km-radius: 14px;
+}
+
+html, body {
+  padding: 0;
+  margin: 0;
+  font-family: var(--km-font);
+}
+
+body.km-theme {
+  color: var(--km-text);
+  background: var(--km-bg-page);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "ss01" on, "cv01" on;
+  /* mobile: กัน tap highlight สีฟ้า + รองรับ safe-area (iPhone notch) */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* รองรับ safe-area สำหรับ PWA / มือถือ (notch, home indicator) */
+.km-safe-top    { padding-top: env(safe-area-inset-top); }
+.km-safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
+/* Scrollbars */
+body.km-theme ::-webkit-scrollbar { width: 10px; height: 10px; }
+body.km-theme ::-webkit-scrollbar-track { background: var(--km-bg-surface); }
+body.km-theme ::-webkit-scrollbar-thumb { background: #DDD6C8; border-radius: 5px; border: 2px solid var(--km-bg-surface); }
+body.km-theme ::-webkit-scrollbar-thumb:hover { background: var(--km-border-strong); }
+
+/* ────────────────────────────────────────────────────
+   Component classes (.km-*)
+   ──────────────────────────────────────────────────── */
+
+/* Card / surface */
+.km-card {
+  background: var(--km-bg-card);
+  border: 1px solid var(--km-border);
+  border-radius: var(--km-radius);
+  box-shadow: 0 1px 3px rgba(42,46,67,0.06), 0 1px 2px rgba(42,46,67,0.04);
+  transition: border-color .2s, box-shadow .2s;
+}
+.km-card:hover { border-color: var(--km-border-strong); }
+.km-card-flat {
+  background: var(--km-bg-surface);
+  border: 1px solid var(--km-border);
+  border-radius: var(--km-radius);
+}
+
+/* Buttons */
+.km-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--km-font);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all .18s;
+  white-space: nowrap;
+  min-height: 40px; /* touch target สำหรับมือถือ */
+}
+.km-btn-primary {
+  background: var(--km-accent);
+  color: var(--km-text-on-accent);
+  font-weight: 600;
+}
+.km-btn-primary:hover { background: var(--km-accent-hi); }
+.km-btn-secondary {
+  background: var(--km-bg-card);
+  color: var(--km-text);
+  border-color: var(--km-border-strong);
+}
+.km-btn-secondary:hover { background: var(--km-bg-elevated); }
+.km-btn-ghost {
+  background: transparent;
+  color: var(--km-text-2);
+  border-color: var(--km-border);
+}
+.km-btn-ghost:hover { background: var(--km-bg-elevated); color: var(--km-text); }
+.km-btn-danger {
+  background: var(--km-danger);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Input */
+.km-input {
+  background: var(--km-bg-input);
+  border: 1px solid var(--km-border-strong);
+  border-radius: 10px;
+  color: var(--km-text);
+  font-family: var(--km-font);
+  font-size: 14px;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+  width: 100%;
+  min-height: 42px; /* touch target */
+}
+.km-input:focus {
+  border-color: var(--km-border-focus);
+  box-shadow: 0 0 0 3px rgba(111,168,220,0.18);
+}
+.km-input::placeholder { color: var(--km-text-dis); }
+
+/* Chip / filter */
+.km-chip {
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 500;
+  border: 1px solid var(--km-border-strong);
+  background: var(--km-bg-card);
+  color: var(--km-text-2);
+  cursor: pointer;
+  transition: all .15s;
+  min-height: 34px;
+}
+.km-chip:hover { color: var(--km-text); border-color: var(--km-accent-soft); }
+.km-chip-active {
+  background: var(--km-accent);
+  border-color: var(--km-accent);
+  color: var(--km-text-on-accent);
+}
+
+/* Badge (หมวดวัตถุดิบ) */
+.km-badge {
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+}
+.km-badge-thai   { color: #3F7CB8; background: rgba(111,168,220,0.14); border-color: rgba(111,168,220,0.3); }
+.km-badge-frozen { color: #4E8B9F; background: rgba(127,181,201,0.14); border-color: rgba(127,181,201,0.3); }
+.km-badge-ssb    { color: #4A8C66; background: rgba(125,191,154,0.14); border-color: rgba(125,191,154,0.3); }
+.km-badge-market { color: #B07F1E; background: rgba(224,168,46,0.14); border-color: rgba(224,168,46,0.3); }
+.km-badge-pkg    { color: #9A6F44; background: rgba(201,154,107,0.14); border-color: rgba(201,154,107,0.3); }
+
+/* Tab */
+.km-tab {
+  padding: 10px 16px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--km-text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all .15s;
+}
+.km-tab:hover { color: var(--km-text-2); }
+.km-tab-active {
+  color: var(--km-accent-hi);
+  border-bottom-color: var(--km-accent);
+}
+
+/* Pill */
+.km-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--km-accent-soft);
+  background: rgba(111,168,220,0.10);
+  color: var(--km-accent-hi);
+}
+
+/* Mono font (tabular numbers) */
+.km-mono { font-family: var(--km-mono); font-feature-settings: "tnum"; }
+
+/* Pulse (status dots) */
+@keyframes km-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.15); }
+}
+.km-pulse { animation: km-pulse 1.8s ease-in-out infinite; }
+
+/* Hide scrollbars */
+.km-noscroll::-webkit-scrollbar { display: none; }
+.km-noscroll { scrollbar-width: none; }
+
+/* ────────────────────────────────────────────────────
+   Print (รายงาน — โทนขาว ประหยัดหมึก)
+   ──────────────────────────────────────────────────── */
+@media print {
+  body * { visibility: hidden; }
+  #print-report, #print-report * { visibility: visible; }
+  #print-report {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  @page { size: A4 portrait; margin: 8mm; }
+  table { font-size: 9px !important; }
+  th, td { padding: 2px 4px !important; }
+  body, .km-card, .km-btn, * { background: white !important; color: black !important; box-shadow: none !important; }
+}
