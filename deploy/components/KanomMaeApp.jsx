@@ -8,6 +8,7 @@ import {
 import {
   getIngredients, getStockBalance, getStockIn,
   addStockIn, deleteStockIn, recalcAvgCost,
+  addIngredient, updateIngredient, deactivateIngredient,
   getMenuItems, getRecipes, setRecipeLine, deleteRecipeLine,
   getSales, recordSale, deleteSale,
   getStockTransfers, addStockTransfer, deleteStockTransfer,
@@ -16,6 +17,7 @@ import PageStock from "./pages/PageStock"
 import PageRecipes from "./pages/PageRecipes"
 import PageSales from "./pages/PageSales"
 import PageTransfer from "./pages/PageTransfer"
+import PageIngredients from "./pages/PageIngredients"
 
 // ── โครงหน้าเว็บทั้งหมด ──
 // primary: true = แสดงใน bottom nav บนมือถือ
@@ -26,7 +28,7 @@ const PAGES = [
   { id: "sales",       label: "บันทึกขาย",      icon: ShoppingCart,    primary: true, ready: true },
   { id: "recipes",     label: "สูตรขนม",        icon: BookOpen,        primary: true, ready: true },
   { id: "transfer",    label: "โอนเข้าหน้าร้าน", icon: ArrowRightLeft, ready: true },
-  { id: "ingredients", label: "วัตถุดิบ",       icon: ScrollText },
+  { id: "ingredients", label: "วัตถุดิบ",       icon: ScrollText,     ready: true },
   { id: "claims",      label: "เคลม/คืนเงิน",   icon: RotateCcw },
   { id: "analytics",   label: "วิเคราะห์",       icon: BarChart3 },
   { id: "users",       label: "จัดการผู้ใช้",   icon: Users },
@@ -103,6 +105,20 @@ export default function KanomMaeApp() {
     await loadAll()
   }
 
+  // ── callbacks: ingredients ──
+  const handleAddIngredient = async (record) => {
+    await addIngredient(record)
+    await loadAll()
+  }
+  const handleUpdateIngredient = async (id, updates) => {
+    await updateIngredient(id, updates)
+    await loadAll()
+  }
+  const handleDeactivateIngredient = async (id) => {
+    await deactivateIngredient(id)
+    await loadAll()
+  }
+
   const go = (id) => { setActive(id); setDrawerOpen(false) }
   const activePage = PAGES.find((p) => p.id === active)
 
@@ -168,6 +184,16 @@ export default function KanomMaeApp() {
           stockTransfers={data.stockTransfers}
           onAddTransfer={handleAddTransfer}
           onDeleteTransfer={handleDeleteTransfer}
+        />
+      )
+    }
+    if (active === "ingredients") {
+      return (
+        <PageIngredients
+          ingredients={data.ingredients}
+          onAddIngredient={handleAddIngredient}
+          onUpdateIngredient={handleUpdateIngredient}
+          onDeactivateIngredient={handleDeactivateIngredient}
         />
       )
     }
