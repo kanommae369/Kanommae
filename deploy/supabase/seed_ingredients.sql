@@ -99,3 +99,18 @@ insert into ingredients (ingredient_id, name, category, source, unit, avg_cost, 
   ('ING-0094', 'กระดาษเช็ดปาก 20x30 ซม 500 แผ่น', 'packaging', 'MARKET', 'ห่อ', 58.00, 0.00, 0.00, false),
   ('ING-0095', 'หนังยาง', 'packaging', 'MARKET', 'ถุง', 0.00, 0.00, 0.00, false)
 on conflict (ingredient_id) do nothing;
+
+-- ── วัตถุดิบดิบ (ของสดตลาด) ที่ "สูตรผลิตพรีมิกซ์" ใช้แต่ master list เดิมไม่มี ──
+-- เพิ่มทีหลังจาก สูตรร้านขนม.xlsx (ดู seed_production_recipes.sql) — 2026-06-13
+-- avg_cost = ราคาตั้งต้นจากตารางราคาในไฟล์สูตร (ช่วงราคา → ใช้ค่ากลาง) จะถูก moving-average ทับเมื่อรับของจริง
+insert into ingredients (ingredient_id, name, category, source, unit, avg_cost, min_stock, reorder_qty, is_perishable) values
+  ('ING-0096', 'มะพร้าวอ่อน (เนื้อ)',   'market', 'MARKET', 'กิโลกรัม', 120.00, 0.00, 0.00, true),   -- 500g=60 → 120/กก
+  ('ING-0097', 'เผือก',                'market', 'MARKET', 'กิโลกรัม',  50.00, 0.00, 0.00, true),   -- 1กก หั่นแล้วเหลือ ~700g
+  ('ING-0098', 'ฟักทอง',               'market', 'MARKET', 'กิโลกรัม',  28.00, 0.00, 0.00, true),   -- 25-32, 1ลูก~8กก เหลือ 4-5กก
+  ('ING-0099', 'กล้วยน้ำหว้า',          'market', 'MARKET', 'หวี',       27.00, 0.00, 0.00, true),   -- 25-30/หวี
+  ('ING-0100', 'ครองแครง (สด)',        'market', 'MARKET', 'กิโลกรัม',  50.00, 0.00, 0.00, true),
+  ('ING-0101', 'กะทิสด',               'market', 'MARKET', 'กิโลกรัม',  90.00, 0.00, 0.00, true),   -- ตาราง 90, footnote 75-80; สั่งครั้งละ 5กก
+  ('ING-0102', 'ใบเตย',                'market', 'MARKET', 'กำ',        20.00, 0.00, 0.00, true),   -- 1กำ ~30-40 ใบ
+  ('ING-0103', 'ปูนขาว',               'market', 'MARKET', 'กิโลกรัม',  70.00, 0.00, 0.00, false),
+  ('ING-0104', 'แห้วดิบ',              'market', 'MARKET', 'กิโลกรัม', 120.00, 0.00, 0.00, true)
+on conflict (ingredient_id) do nothing;

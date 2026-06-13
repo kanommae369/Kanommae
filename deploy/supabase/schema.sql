@@ -63,6 +63,26 @@ create table if not exists recipes (
   unique (menu_item_id, ingredient_id)
 );
 
+-- ── 4b. PRODUCTION_RECIPES (สูตรผลิตพรีมิกซ์ — ชั้น 1: วัตถุดิบดิบ → ของกึ่งสำเร็จ) ──
+-- ต่างจาก recipes (ชั้น 2 = พรีมิกซ์ → เมนูขาย) ตรงที่ตารางนี้บอกว่า "ผลิต" ถุงพรีมิกซ์/ซอส/ท็อปปิ้ง
+-- 1 ถุง จากวัตถุดิบดิบอะไรบ้าง (ที่มา: สูตรร้านขนม.xlsx)
+-- product_id    : ของกึ่งสำเร็จที่ผลิตได้ (ingredient ที่เป็นถุง thai_mix เช่น เต้าส่วน, ซอสกะทิอัญชัน)
+-- ingredient_id : วัตถุดิบดิบที่ใช้ — map ได้บางส่วน (null = ยังไม่มีใน DB / เป็นพรีมิกซ์ย่อย "ส่วนผสม 1 สูตร")
+-- raw_name      : ชื่อวัตถุดิบตามสูตรต้นฉบับ — เก็บไว้เสมอ ใช้แสดง/อ้างอิงแม้ map ไม่ได้
+-- qty_text      : ปริมาณตามสูตร เช่น "500 กรัม", "5 ใบ"
+-- line_cost     : ต้นทุนบรรทัด (บาท) ตามไฟล์ — รวมเป็นต้นทุน "ต่อ 1 สูตร" ผ่าน v_production_cost
+-- ⚠ ยังไม่มี yield (1 สูตร = กี่ถุง) → คิดต้นทุน "ต่อถุง" ไม่ได้จนกว่าเจ้าของร้านจะยืนยัน
+create table if not exists production_recipes (
+  id            serial primary key,
+  product_id    text not null references ingredients(ingredient_id) on delete cascade,
+  raw_name      text not null,
+  ingredient_id text references ingredients(ingredient_id),
+  qty_text      text,
+  line_cost     numeric(10,2) not null default 0,
+  note          text,
+  sort_order    int not null default 0
+);
+
 -- ── 5. STOCK IN (รับวัตถุดิบเข้าคลังที่บ้าน) ──────────────────
 create table if not exists stock_in (
   id            serial primary key,
@@ -244,6 +264,18 @@ left join recipes r     on r.menu_item_id  = m.id
 left join ingredients i on i.ingredient_id = r.ingredient_id
 where m.is_active = true
 group by m.id, m.menu_id, m.name, m.category, m.price;
+
+-- ── VIEW: ต้นทุนต่อสูตรผลิต (รวม line_cost ต่อ product = "ต่อ 1 สูตร") ──
+-- batch_cost = ต้นทุนทำ 1 สูตร · ยังไม่หาร yield จึงยังไม่ใช่ต้นทุน/ถุง
+create or replace view v_production_cost as
+select
+  p.product_id,
+  i.name             as product_name,
+  count(*)           as line_count,
+  sum(p.line_cost)   as batch_cost
+from production_recipes p
+join ingredients i on i.ingredient_id = p.product_id
+group by p.product_id, i.name;
 
 -- ── VIEW: ยอดขายรายวัน ────────────────────────────────────────
 create or replace view v_daily_sales as

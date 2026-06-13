@@ -17,7 +17,10 @@ npm run dev                       # http://localhost:3000
 2. `supabase/seed_ingredients.sql` — วัตถุดิบ 95 รายการ
 3. `supabase/seed_opening_stock.sql` — ยอดสต็อกตั้งต้น
 4. `supabase/seed_menu.sql` — เมนูขาย
-5. `supabase/seed_recipes.sql` — สูตรขนม (BOM)
+5. `supabase/seed_recipes.sql` — สูตรตัก (BOM ชั้น 2: เมนู → ถุงพรีมิกซ์)
+6. `supabase/seed_production_recipes.sql` — สูตรผลิต (BOM ชั้น 1: วัตถุดิบดิบ → ถุงพรีมิกซ์)
+
+หรือรวบยอด: paste `supabase/setup_all.sql` ไฟล์เดียว (รวมทุกไฟล์ตามลำดับ — regenerate ด้วย `py deploy/scripts/build_setup_all.py`)
 
 ## สถาปัตยกรรม
 
@@ -83,14 +86,31 @@ View `v_stock_balance` คำนวณ:
 - อัปเดตเมื่อรับของเข้า · เรียก `recalc_ingredient_avg_cost()` หลังแก้ไข/ลบ stock_in
 - ต้นทุนต่อเมนู = Σ(`recipe.qty_stock` × `ingredient.avg_cost`) → view `v_menu_cost`
 
-## Recipe / BOM
+## Recipe / BOM — มี 2 ชั้น
 
-`recipes` ผูก `menu_item` ↔ `ingredient`:
+```
+ชั้น 1 (สูตรผลิต)              ชั้น 2 (สูตรตัก)
+วัตถุดิบดิบ ──► ถุงพรีมิกซ์ ──► เมนูขาย
+production_recipes            recipes
+```
+
+**ชั้น 2 — `recipes`** ผูก `menu_item` ↔ `ingredient` (ถุงพรีมิกซ์/ของสำเร็จ):
 - `qty_display` — ปริมาณตามคู่มือ ("5 ลูก", "2 กระบวย") ให้พนักงานอ้างอิง
 - `qty_stock` — ปริมาณในหน่วยสต็อก ใช้ `record_sale()` ตัดสต็อกอัตโนมัติ
+- ต้นทุน/เมนู → view `v_menu_cost`
 
-⚠ **qty_stock หลายรายการยังเป็น 0** — ต้องให้เจ้าของร้านยืนยันอัตราแปลงหน่วยตัก→หน่วยสต็อก
+**ชั้น 1 — `production_recipes`** ผูก `ingredient(product)` ↔ วัตถุดิบดิบหลายชิ้น (ที่มา: `สูตรร้านขนม.xlsx`):
+- `product_id` — ของกึ่งสำเร็จที่ผลิตได้ (ถุง thai_mix เช่น เต้าส่วน, ซอสกะทิอัญชัน)
+- `raw_name` — ชื่อวัตถุดิบตามสูตรต้นฉบับ (เก็บครบทุกบรรทัด รวมน้ำ/พรีมิกซ์ย่อย)
+- `ingredient_id` — map กับวัตถุดิบดิบที่มีจริง (null = น้ำ / พรีมิกซ์ย่อย / ยังไม่มีใน DB)
+- `line_cost` — ต้นทุนบรรทัด → รวมเป็น batch_cost ผ่าน view `v_production_cost`
+- seed มี 20 สูตร (ข้าม กะทิสดราด/เผือกเชื่อม/ท็อปปิ้งข้าวเหนียวดำ ที่ยังไม่มี product ใน DB)
+
+⚠ **ชั้น 2: `qty_stock` หลายรายการยังเป็น 0** — ต้องให้เจ้าของร้านยืนยันอัตราแปลงหน่วยตัก→หน่วยสต็อก
 (เช่น กะทิเสริมขนมไทย 1 ถุง ตักได้กี่กระบวย) ระหว่างที่เป็น 0 ระบบบันทึกยอดขายปกติแต่ไม่ตัดสต็อกรายการนั้น
+
+⚠ **ชั้น 1: ยังไม่มี `yield` (1 สูตร = กี่ถุง)** — `v_production_cost` จึงให้ต้นทุน "ต่อสูตร" ยังไม่ใช่ "ต่อถุง"
+ยังต้องรอเจ้าของร้านยืนยัน yield ก่อนคำนวณต้นทุน/ถุง แล้วค่อยอัปเดต `ingredients.avg_cost` ของถุงพรีมิกซ์
 
 ## บันทึกการขาย
 

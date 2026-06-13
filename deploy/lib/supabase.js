@@ -245,6 +245,25 @@ export async function getMenuCost() {
   return data
 }
 
+// ── Production recipes (สูตรผลิตพรีมิกซ์ ชั้น 1: วัตถุดิบดิบ → ของกึ่งสำเร็จ) ──
+// คืนทุกบรรทัด พร้อมชื่อ product (ถุงที่ผลิตได้) + วัตถุดิบดิบที่ map ได้
+export async function getProductionRecipes() {
+  const { data, error } = await supabase
+    .from("production_recipes")
+    .select("*, product:product_id(name, unit), ingredient:ingredient_id(name, unit, avg_cost)")
+    .order("product_id")
+    .order("sort_order")
+  if (error) throw error
+  return data
+}
+
+// ต้นทุนต่อ "1 สูตร" (batch) ของแต่ละ product — ยังไม่หาร yield
+export async function getProductionCost() {
+  const { data, error } = await supabase.from("v_production_cost").select("*").order("product_id")
+  if (error) throw error
+  return data
+}
+
 // ── Sales (บันทึกขาย — ตัดสต็อกตามสูตรอัตโนมัติ) ──────────────
 // items: [{ menu_item_id, quantity, unit_price }, ...]
 // source: 'manual' | 'pos' | 'web' · posRef: เลขอ้างอิงจาก POS (กันบันทึกซ้ำ)
