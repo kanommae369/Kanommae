@@ -13,6 +13,12 @@
 .env.*.local
 *.env
 
+# Secrets / capture (มี token, อย่า commit)
+*.har
+foodstory.har
+*credentials*
+*secret*
+
 # Dependencies / build (เผื่อ — deploy/.gitignore คุมรายละเอียดอีกชั้น)
 node_modules/
 .next/
