@@ -16,6 +16,9 @@
 # Secrets / capture (มี token, อย่า commit)
 *.har
 foodstory.har
+*.curl
+*.curl.txt
+foodstory.curl*
 *credentials*
 *secret*
 
