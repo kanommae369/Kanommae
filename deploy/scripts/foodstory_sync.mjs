@@ -1,6 +1,8 @@
 // foodstory_sync.mjs — sync เมนู + ยอดขายจาก FoodStory เข้า Supabase
-// ใช้: cd deploy && node scripts/foodstory_sync.mjs [--dry]
-//   --dry = ดึง+แสดงสิ่งที่จะทำ แต่ไม่เขียน DB
+// ใช้: cd deploy && node scripts/foodstory_sync.mjs [--dry] [--from=YYYY-MM] [--to=YYYY-MM]
+//   --dry            = ดึง+แสดงสิ่งที่จะทำ แต่ไม่เขียน DB
+//   --from / --to    = ช่วงเดือน (ไม่ใส่ = เดือนเดียวตาม FOODSTORY_YEAR/MONTH ใน .env.local)
+//   เช่น --from=2026-04 --to=2026-06  → sync ย้อนหลัง 3 เดือน
 //
 // ทำ 2 อย่าง (idempotent ทั้งคู่ — รันซ้ำปลอดภัย):
 //   1) upsert menu_items จากสินค้าที่ขาย (menu_id='FS-<id>', pos_code=<id>, ราคาจริง)
@@ -8,6 +10,25 @@
 import { fetchMonthlySales, mapCategory } from "./lib/foodstory.mjs"
 
 const DRY = process.argv.includes("--dry")
+const argVal = (name) => {
+  const a = process.argv.find((x) => x.startsWith(`--${name}=`))
+  return a ? a.split("=")[1] : null
+}
+
+// สร้างรายการเดือน [{year,month}] จาก --from/--to (YYYY-MM) หรือ default = env เดือนเดียว
+function monthList() {
+  const from = argVal("from"), to = argVal("to")
+  if (!from && !to) {
+    return [{ year: process.env.FOODSTORY_YEAR, month: process.env.FOODSTORY_MONTH }]
+  }
+  const parse = (s) => { const [y, m] = s.split("-").map(Number); return y * 12 + (m - 1) }
+  const a = parse(from || to), b = parse(to || from)
+  const out = []
+  for (let i = Math.min(a, b); i <= Math.max(a, b); i++) {
+    out.push({ year: String(Math.floor(i / 12)), month: String((i % 12) + 1) })
+  }
+  return out
+}
 const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 if (!SB_URL || !SB_KEY) { console.error("✗ ขาด NEXT_PUBLIC_SUPABASE_URL / KEY ใน .env.local"); process.exit(1) }
@@ -29,8 +50,17 @@ function cleanName(name, code) {
 }
 
 async function main() {
-  const { year, month, rows, total } = await fetchMonthlySales()
-  console.log(`→ FoodStory ${year}-${month}: ${rows.length} แถว (recordsTotal=${total})${DRY ? "  [DRY RUN]" : ""}`)
+  const months = monthList()
+  const label = months.length === 1 ? `${months[0].year}-${months[0].month}` : `${months.length} เดือน`
+  console.log(`→ FoodStory ${label}${DRY ? "  [DRY RUN]" : ""}`)
+
+  // ดึงทุกเดือนแล้วรวม row
+  const rows = []
+  for (const { year, month } of months) {
+    const r = await fetchMonthlySales({ year, month })
+    console.log(`    ${year}-${String(month).padStart(2, "0")}: ${r.rows.length} แถว`)
+    rows.push(...r.rows)
+  }
   if (!rows.length) { console.log("ไม่มีข้อมูล — จบ"); return }
 
   // ── 1) เตรียม + upsert menu_items ──
@@ -116,9 +146,9 @@ async function main() {
     await sb("pos_sync_log", {
       method: "POST",
       body: {
-        direction: "inbound", kind: "sale", status: "ok", ref: `${year}-${month}`,
+        direction: "inbound", kind: "sale", status: "ok", ref: label,
         message: `sync ${okSales} วัน · ${totalQty} ชิ้น · ${totalAmt} บาท`,
-        payload: { year, month, menu: menuRows.length, sales: okSales },
+        payload: { months: label, menu: menuRows.length, sales: okSales },
       },
       prefer: "return=minimal",
     })
