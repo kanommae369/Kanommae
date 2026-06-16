@@ -13,6 +13,7 @@ import {
   getSales, recordSale, deleteSale,
   getStockTransfers, addStockTransfer, deleteStockTransfer,
 } from "../lib/supabase"
+import PageDashboard from "./pages/PageDashboard"
 import PageStock from "./pages/PageStock"
 import PageRecipes from "./pages/PageRecipes"
 import PageSales from "./pages/PageSales"
@@ -23,7 +24,7 @@ import PageIngredients from "./pages/PageIngredients"
 // primary: true = แสดงใน bottom nav บนมือถือ
 // ready: true = พอร์ต logic แล้ว · false = ยัง scaffold
 const PAGES = [
-  { id: "dashboard",   label: "ภาพรวม",        icon: LayoutDashboard, primary: true },
+  { id: "dashboard",   label: "ภาพรวม",        icon: LayoutDashboard, primary: true, ready: true },
   { id: "stock",       label: "จัดการสต็อก",    icon: Package,         primary: true, ready: true },
   { id: "sales",       label: "บันทึกขาย",      icon: ShoppingCart,    primary: true, ready: true },
   { id: "recipes",     label: "สูตรขนม",        icon: BookOpen,        primary: true, ready: true },
@@ -35,7 +36,7 @@ const PAGES = [
 ]
 
 export default function KanomMaeApp() {
-  const [active, setActive] = useState("stock")
+  const [active, setActive] = useState("dashboard")
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -142,6 +143,16 @@ export default function KanomMaeApp() {
           </p>
           <button onClick={loadAll} className="km-btn km-btn-secondary mt-3">ลองใหม่</button>
         </div>
+      )
+    }
+    if (active === "dashboard") {
+      return (
+        <PageDashboard
+          sales={data.sales}
+          stockBalance={data.stockBalance}
+          menuItems={data.menuItems}
+          ingredients={data.ingredients}
+        />
       )
     }
     if (active === "stock") {
