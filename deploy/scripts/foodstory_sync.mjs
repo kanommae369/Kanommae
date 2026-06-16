@@ -15,8 +15,13 @@ const argVal = (name) => {
   return a ? a.split("=")[1] : null
 }
 
-// สร้างรายการเดือน [{year,month}] จาก --from/--to (YYYY-MM) หรือ default = env เดือนเดียว
+// สร้างรายการเดือน [{year,month}] จาก --from/--to (YYYY-MM) หรือ default
+// --current = เดือนปัจจุบันเสมอ (ใช้กับ scheduled task — ไม่ผูกเดือนใน .env)
 function monthList() {
+  if (process.argv.includes("--current")) {
+    const n = new Date()
+    return [{ year: String(n.getFullYear()), month: String(n.getMonth() + 1) }]
+  }
   const from = argVal("from"), to = argVal("to")
   if (!from && !to) {
     return [{ year: process.env.FOODSTORY_YEAR, month: process.env.FOODSTORY_MONTH }]

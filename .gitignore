@@ -32,6 +32,10 @@ dist/
 __pycache__/
 *.pyc
 
+# Logs (sync output ฯลฯ)
+logs/
+*.log
+
 # OS / Editor
 .DS_Store
 Thumbs.db
