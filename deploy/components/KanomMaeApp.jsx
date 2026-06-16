@@ -21,6 +21,7 @@ import PageSales from "./pages/PageSales"
 import PageTransfer from "./pages/PageTransfer"
 import PageIngredients from "./pages/PageIngredients"
 import PageClaims from "./pages/PageClaims"
+import PageAnalytics from "./pages/PageAnalytics"
 
 // ── โครงหน้าเว็บทั้งหมด ──
 // primary: true = แสดงใน bottom nav บนมือถือ
@@ -33,7 +34,7 @@ const PAGES = [
   { id: "transfer",    label: "โอนเข้าหน้าร้าน", icon: ArrowRightLeft, ready: true },
   { id: "ingredients", label: "วัตถุดิบ",       icon: ScrollText,     ready: true },
   { id: "claims",      label: "เคลม/คืนเงิน",   icon: RotateCcw, ready: true },
-  { id: "analytics",   label: "วิเคราะห์",       icon: BarChart3 },
+  { id: "analytics",   label: "วิเคราะห์",       icon: BarChart3, ready: true },
   { id: "users",       label: "จัดการผู้ใช้",   icon: Users },
 ]
 
@@ -234,6 +235,9 @@ export default function KanomMaeApp() {
           onDeleteClaim={handleDeleteClaim}
         />
       )
+    }
+    if (active === "analytics") {
+      return <PageAnalytics sales={data.sales} />
     }
     // หน้าอื่น — ยัง scaffold
     return (
