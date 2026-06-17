@@ -176,4 +176,9 @@ async function main() {
   if (!DRY) console.log(`✓ วันนี้ (${TODAY_BKK}) รีเฟรชยอดใหม่ทุกรอบ · วันเก่า idempotent ไม่บันทึกซ้ำ`)
 }
 
-main().catch((e) => { console.error("✗", e.message); process.exit(1) })
+main().catch((e) => {
+  console.error("✗", e.message)
+  // exit 2 = ปัญหา auth/cookie (ให้ wrapper เด้งเตือน refresh) · exit 1 = error อื่น
+  const authIssue = /auth|login|เด้ง|cookie|401|419|403/i.test(e.message)
+  process.exit(authIssue ? 2 : 1)
+})

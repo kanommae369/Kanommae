@@ -41,6 +41,8 @@ $t2 = New-ScheduledTaskTrigger -Daily -At 10:00PM
 Register-ScheduledTask -TaskName "KanomMae FoodStory Sync" -Action $a -Trigger $t1,$t2 -Force
 ```
 - ยอด **"วันนี้" รีเฟรชใหม่ทุกรอบ** (ลบ-บันทึกใหม่) → รอบ 22:00 เก็บยอดบ่าย/เย็นครบ · วันเก่า idempotent
+- **เด้งเตือนเมื่อ fail**: sync คืน exit 2 (cookie/auth พัง) หรือ 1 (error อื่น) → `.cmd` เด้ง popup
+  (cookie หมด = ข้อความให้รัน `foodstory_setcookie.mjs`) · popup โชว์เฉพาะตอน user login อยู่
 - ตราบใดที่ cookie ยังไม่หมด → sync เอง · พอ log ขึ้น "auth ไม่ผ่าน/เด้ง login" = ถึงเวลา refresh cookie
 - รันเดี๋ยวนั้น: `Start-ScheduledTask -TaskName "KanomMae FoodStory Sync"` · ลบ: `Unregister-ScheduledTask -TaskName "KanomMae FoodStory Sync" -Confirm:$false`
 - 🎯 ทางหายปวดหัวระยะยาว: ขอ **partner API จาก LINE MAN Wongnai** (ไม่มี captcha/session หมดอายุ)
