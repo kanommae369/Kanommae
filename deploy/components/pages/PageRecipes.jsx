@@ -4,7 +4,7 @@ import {
   Search, Plus, Trash2, Loader2, ChevronLeft, BookOpen, AlertTriangle, Check,
 } from "lucide-react"
 import { fmt, fmtB } from "../shared/helpers"
-import { MENU_CATEGORIES } from "../shared/constants"
+import { MENU_CATEGORIES, INGREDIENT_CATEGORIES } from "../shared/constants"
 import { SectionTitle, EmptyState, Toast, IconBtn } from "../shared/ui-kit"
 
 export default function PageRecipes({
@@ -356,6 +356,13 @@ function AddLineForm({ menuId, available, onSave, showToast }) {
   const [qtyDisplay, setQtyDisplay] = useState("")
   const [saving, setSaving] = useState(false)
 
+  // จัดกลุ่มตามหมวด → optgroup (กันสับสนว่าถุงพรีมิกซ์ที่ชื่อเหมือนเมนูเป็นเมนู)
+  const grouped = useMemo(() => {
+    const g = {}
+    for (const i of available) (g[i.category] ||= []).push(i)
+    return g
+  }, [available])
+
   const add = async () => {
     if (!ingredientId) {
       showToast("เลือกวัตถุดิบก่อน", "error")
@@ -386,17 +393,21 @@ function AddLineForm({ menuId, available, onSave, showToast }) {
       <h4 className="text-sm font-semibold text-km-text mb-2">เพิ่มวัตถุดิบ</h4>
       <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr_auto] gap-2 items-end">
         <div>
-          <label className="text-[10px] uppercase text-km-text-muted">วัตถุดิบ</label>
+          <label className="text-[10px] uppercase text-km-text-muted">วัตถุดิบ (ในสต็อก)</label>
           <select
             value={ingredientId}
             onChange={(e) => setIngredientId(e.target.value)}
             className="km-input py-1.5 text-sm"
           >
-            <option value="">— เลือก —</option>
-            {available.map((i) => (
-              <option key={i.ingredient_id} value={i.ingredient_id}>
-                {i.name} ({i.unit})
-              </option>
+            <option value="">— เลือกวัตถุดิบ —</option>
+            {Object.entries(grouped).map(([cat, items]) => (
+              <optgroup key={cat} label={INGREDIENT_CATEGORIES[cat]?.label || cat}>
+                {items.map((i) => (
+                  <option key={i.ingredient_id} value={i.ingredient_id}>
+                    {i.name} ({i.unit})
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </div>
