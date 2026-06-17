@@ -36,6 +36,9 @@ __pycache__/
 logs/
 *.log
 
+# Reports ที่ export (มีตัวเลขยอดขายจริง — ไม่ขึ้น git)
+reports/
+
 # OS / Editor
 .DS_Store
 Thumbs.db
