@@ -299,7 +299,7 @@ function RecipeLineRow({ line, onSave, onDelete, showToast }) {
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         <div>
-          <label className="text-[10px] uppercase text-km-text-muted">qty (หน่วยสต็อก)</label>
+          <label className="text-[10px] uppercase text-km-text-muted">ปริมาณที่ใช้ / 1 ที่ขาย</label>
           <input
             type="number"
             min="0"
@@ -312,7 +312,7 @@ function RecipeLineRow({ line, onSave, onDelete, showToast }) {
           />
         </div>
         <div>
-          <label className="text-[10px] uppercase text-km-text-muted">ปริมาณตัก (อ้างอิง)</label>
+          <label className="text-[10px] uppercase text-km-text-muted">โน้ตปริมาณ (ไม่คิดคำนวณ)</label>
           <input
             value={qtyDisplay}
             onChange={(e) => setQtyDisplay(e.target.value)}
@@ -412,7 +412,7 @@ function AddLineForm({ menuId, available, onSave, showToast }) {
           </select>
         </div>
         <div className="sm:w-24">
-          <label className="text-[10px] uppercase text-km-text-muted">qty สต็อก</label>
+          <label className="text-[10px] uppercase text-km-text-muted">ปริมาณที่ใช้ / 1 ที่ขาย</label>
           <input
             type="number"
             min="0"
@@ -424,7 +424,7 @@ function AddLineForm({ menuId, available, onSave, showToast }) {
           />
         </div>
         <div>
-          <label className="text-[10px] uppercase text-km-text-muted">ปริมาณตัก</label>
+          <label className="text-[10px] uppercase text-km-text-muted">โน้ตปริมาณ (ไม่คิด)</label>
           <input
             value={qtyDisplay}
             onChange={(e) => setQtyDisplay(e.target.value)}
