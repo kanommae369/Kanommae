@@ -33,12 +33,16 @@ cd deploy && node scripts/foodstory_setcookie.mjs   # แกะใส่ .env.lo
 ## ตั้งเวลา sync อัตโนมัติ (Windows Task Scheduler)
 
 `scripts/foodstory-sync.cmd` รัน sync เดือนปัจจุบัน + เขียน log ที่ `deploy/logs/foodstory-sync.log`
-ลงตารางรันทุกวัน 21:00 (รันครั้งเดียวเพื่อสร้าง task):
-```cmd
-schtasks /create /tn "KanomMae FoodStory Sync" /tr "C:\Projects\ขนมแม่\deploy\scripts\foodstory-sync.cmd" /sc daily /st 21:00
+ติดตั้งแล้วเป็น task **"KanomMae FoodStory Sync"** รัน **วันละ 2 รอบ (14:00, 22:00)** — สร้างด้วย PowerShell:
+```powershell
+$a = New-ScheduledTaskAction -Execute "C:\Projects\ขนมแม่\deploy\scripts\foodstory-sync.cmd"
+$t1 = New-ScheduledTaskTrigger -Daily -At 2:00PM
+$t2 = New-ScheduledTaskTrigger -Daily -At 10:00PM
+Register-ScheduledTask -TaskName "KanomMae FoodStory Sync" -Action $a -Trigger $t1,$t2 -Force
 ```
-- ตราบใดที่ cookie ยังไม่หมดอายุ → sync เองทุกวัน · พอ log ขึ้น "auth ไม่ผ่าน/เด้ง login" = ถึงเวลา refresh cookie
-- ลบ task: `schtasks /delete /tn "KanomMae FoodStory Sync" /f`
+- ยอด **"วันนี้" รีเฟรชใหม่ทุกรอบ** (ลบ-บันทึกใหม่) → รอบ 22:00 เก็บยอดบ่าย/เย็นครบ · วันเก่า idempotent
+- ตราบใดที่ cookie ยังไม่หมด → sync เอง · พอ log ขึ้น "auth ไม่ผ่าน/เด้ง login" = ถึงเวลา refresh cookie
+- รันเดี๋ยวนั้น: `Start-ScheduledTask -TaskName "KanomMae FoodStory Sync"` · ลบ: `Unregister-ScheduledTask -TaskName "KanomMae FoodStory Sync" -Confirm:$false`
 - 🎯 ทางหายปวดหัวระยะยาว: ขอ **partner API จาก LINE MAN Wongnai** (ไม่มี captcha/session หมดอายุ)
 
 ## สิ่งที่รู้แล้ว (ตรวจสอบจริง)

@@ -54,6 +54,18 @@ function cleanName(name, code) {
   return name.trim()
 }
 
+// วันที่วันนี้ตามเวลาไทย (BKK) — ใช้ตัดสินว่าควร "รีเฟรช" sale ของวันนี้
+const TODAY_BKK = new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 10)
+
+// ลบ sale เดิมของ pos_ref นี้ (+ stock_out + sale_items) เพื่อบันทึกใหม่ให้ยอดอัปเดต
+async function deletePosSale(posRef) {
+  const existing = await sb(`sales?select=id&pos_ref=eq.${encodeURIComponent(posRef)}`)
+  for (const s of existing || []) {
+    await sb(`stock_out?from_sale_id=eq.${s.id}`, { method: "DELETE", prefer: "return=minimal" })
+    await sb(`sales?id=eq.${s.id}`, { method: "DELETE", prefer: "return=minimal" })
+  }
+}
+
 async function main() {
   const months = monthList()
   const label = months.length === 1 ? `${months[0].year}-${months[0].month}` : `${months.length} เดือน`
@@ -134,6 +146,8 @@ async function main() {
       continue
     }
     items.forEach((it) => delete it._name)
+    // วันนี้ยังขายไม่จบ → ลบของเดิมแล้วบันทึกใหม่ทุกรอบ (ให้ยอดอัปเดต) · วันเก่า idempotent
+    if (g.date === TODAY_BKK) await deletePosSale(posRef)
     const saleId = await sb("rpc/record_sale", {
       method: "POST",
       body: {
@@ -159,7 +173,7 @@ async function main() {
     })
   }
   console.log(`\n${DRY ? "[DRY] " : "✓ "}รวม: ${totalQty} ชิ้น · ${totalAmt.toLocaleString()} บาท`)
-  if (!DRY) console.log("⚠ หมายเหตุ: pos_ref idempotent ต่อวัน — ถ้า sync วันที่ยังขายไม่จบ ยอดจะ freeze (sync ใหม่ไม่อัปเดต)")
+  if (!DRY) console.log(`✓ วันนี้ (${TODAY_BKK}) รีเฟรชยอดใหม่ทุกรอบ · วันเก่า idempotent ไม่บันทึกซ้ำ`)
 }
 
 main().catch((e) => { console.error("✗", e.message); process.exit(1) })
